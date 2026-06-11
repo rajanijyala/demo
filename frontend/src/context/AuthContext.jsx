@@ -1,33 +1,47 @@
-import { createContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useMemo, useState } from 'react';
 
 const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+function loadStoredUser() {
+  try {
+    const raw = localStorage.getItem('app-user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    localStorage.removeItem('app-user');
+    return null;
+  }
+}
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('app-user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, []);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(loadStoredUser);
+  const loading = false;
 
   const login = (userData, token) => {
     const nextUser = { ...userData, token };
-    localStorage.setItem('app-user', JSON.stringify(nextUser));
+    try {
+      localStorage.setItem('app-user', JSON.stringify(nextUser));
+    } catch {
+      throw new Error('Unable to save session. Storage may be full.');
+    }
     setUser(nextUser);
   };
 
   const register = (userData, token) => {
     const nextUser = { ...userData, token };
-    localStorage.setItem('app-user', JSON.stringify(nextUser));
+    try {
+      localStorage.setItem('app-user', JSON.stringify(nextUser));
+    } catch {
+      throw new Error('Unable to save session. Storage may be full.');
+    }
     setUser(nextUser);
   };
 
   const logout = () => {
-    localStorage.removeItem('app-user');
+    try {
+      localStorage.removeItem('app-user');
+    } catch {
+      // Proceed with logout even if storage clear fails
+    }
     setUser(null);
   };
 
