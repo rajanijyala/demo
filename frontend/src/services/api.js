@@ -9,8 +9,16 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error.response?.data?.message || 'Something went wrong while requesting the API.';
-    return Promise.reject(new Error(message));
+    if (!error.response) {
+      error.message = error.message || 'Network error. Please check your connection.';
+      return Promise.reject(error);
+    }
+
+    const serverMessage = error.response.data?.message;
+    if (serverMessage) {
+      error.message = serverMessage;
+    }
+    return Promise.reject(error);
   },
 );
 
