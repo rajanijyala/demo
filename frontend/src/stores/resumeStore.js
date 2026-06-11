@@ -7,21 +7,31 @@ const useResumeStore = create((set) => ({
 
   uploadResume: async (file, extractedText) => {
     set({ loading: true });
-    const formData = new FormData();
-    formData.append('resume', file);
-    if (extractedText) formData.append('extractedText', extractedText);
-    const { data } = await api.post('/resume/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    set((state) => ({ resumes: [data.data, ...state.resumes], loading: false }));
-    return data.data;
+    try {
+      const formData = new FormData();
+      formData.append('resume', file);
+      if (extractedText) formData.append('extractedText', extractedText);
+      const { data } = await api.post('/resume/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      set((state) => ({ resumes: [data.data, ...state.resumes], loading: false }));
+      return data.data;
+    } catch (error) {
+      set({ loading: false });
+      throw error;
+    }
   },
 
   fetchResumes: async () => {
     set({ loading: true });
-    const { data } = await api.get('/resume');
-    set({ resumes: data.data, loading: false });
-    return data.data;
+    try {
+      const { data } = await api.get('/resume');
+      set({ resumes: data.data, loading: false });
+      return data.data;
+    } catch (error) {
+      set({ loading: false });
+      throw error;
+    }
   },
 
   deleteResume: async (id) => {

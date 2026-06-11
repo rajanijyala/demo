@@ -109,7 +109,12 @@ export const refreshToken = asyncHandler(async (req, res) => {
   const { refreshToken: token } = req.body;
   if (!token) throw new ApiError(400, 'Refresh token is required');
 
-  const decoded = verifyRefreshToken(token);
+  let decoded;
+  try {
+    decoded = verifyRefreshToken(token);
+  } catch {
+    throw new ApiError(401, 'Invalid or expired refresh token');
+  }
   const user = await User.findById(decoded.userId);
 
   if (!user || user.refreshToken !== token) {

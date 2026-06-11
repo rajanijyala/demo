@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mic, MicOff, Volume2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -12,6 +12,7 @@ import useInterviewStore from '../stores/interviewStore';
 
 const VoiceInterview = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const {
     currentInterview, questions, responses, currentQuestionIndex,
     loading, getInterview, startInterview, submitAnswer, finishInterview, nextQuestion,
@@ -153,7 +154,15 @@ const VoiceInterview = () => {
                 {submitting ? 'Submitting...' : 'Submit Answer'}
               </Button>
               {currentQuestionIndex === questions.length - 1 && (
-                <Button variant="secondary" onClick={() => finishInterview(id)}>Finish</Button>
+                <Button variant="secondary" onClick={async () => {
+                  try {
+                    await finishInterview(id);
+                    toast.success('Interview completed!');
+                    navigate(`/interview/${id}`);
+                  } catch (err) {
+                    toast.error(err.message || 'Failed to finish interview');
+                  }
+                }}>Finish</Button>
               )}
             </div>
           </Card>

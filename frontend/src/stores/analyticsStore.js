@@ -7,9 +7,14 @@ const useAnalyticsStore = create((set) => ({
 
   fetchDashboard: async () => {
     set({ loading: true });
-    const { data } = await api.get('/analytics/dashboard');
-    set({ dashboard: data.data, loading: false });
-    return data.data;
+    try {
+      const { data } = await api.get('/analytics/dashboard');
+      set({ dashboard: data.data, loading: false });
+      return data.data;
+    } catch (error) {
+      set({ loading: false });
+      throw error;
+    }
   },
 }));
 

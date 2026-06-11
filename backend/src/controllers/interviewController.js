@@ -9,6 +9,8 @@ import { generateInterviewQuestions, generateAnswerFeedback } from '../services/
 export const generateInterview = asyncHandler(async (req, res) => {
   const { role, experienceLevel, difficulty, technologies } = req.body;
 
+  const aiQuestions = await generateInterviewQuestions({ role, experienceLevel, difficulty, technologies });
+
   const interview = await Interview.create({
     userId: req.user._id,
     title: `${role} Interview`,
@@ -17,8 +19,6 @@ export const generateInterview = asyncHandler(async (req, res) => {
     difficulty,
     technologies,
   });
-
-  const aiQuestions = await generateInterviewQuestions({ role, experienceLevel, difficulty, technologies });
 
   const questions = await Question.insertMany(
     aiQuestions.map((q, i) => ({
@@ -39,6 +39,7 @@ export const generateInterview = asyncHandler(async (req, res) => {
 export const startInterview = asyncHandler(async (req, res) => {
   const interview = await Interview.findOne({ _id: req.params.id, userId: req.user._id });
   if (!interview) throw new ApiError(404, 'Interview not found');
+  if (interview.status !== 'pending') throw new ApiError(400, 'Interview already started');
 
   interview.status = 'in-progress';
   interview.startedAt = new Date();
@@ -57,6 +58,9 @@ export const submitAnswer = asyncHandler(async (req, res) => {
 
   const interview = await Interview.findOne({ _id: question.interviewId, userId: req.user._id });
   if (!interview) throw new ApiError(403, 'Not authorized');
+
+  const existingResponse = await Response.findOne({ questionId, interviewId: interview._id, userId: req.user._id });
+  if (existingResponse) throw new ApiError(400, 'Answer already submitted for this question');
 
   let aiFeedback = {
     technicalScore: 0,

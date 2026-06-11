@@ -13,22 +13,30 @@ const useInterviewStore = create((set, get) => ({
 
   generateInterview: async (payload) => {
     set({ loading: true });
-    const { data } = await api.post('/interview/generate', payload);
-    set({ loading: false });
-    return data.data;
+    try {
+      const { data } = await api.post('/interview/generate', payload);
+      return data.data;
+    } finally {
+      set({ loading: false });
+    }
   },
 
   startInterview: async (interviewId) => {
     set({ loading: true });
-    const { data } = await api.post(`/interview/start/${interviewId}`);
-    set({
-      currentInterview: data.data.interview,
-      questions: data.data.questions,
-      currentQuestionIndex: 0,
-      responses: [],
-      loading: false,
-    });
-    return data.data;
+    try {
+      const { data } = await api.post(`/interview/start/${interviewId}`);
+      set({
+        currentInterview: data.data.interview,
+        questions: data.data.questions,
+        currentQuestionIndex: 0,
+        responses: [],
+        loading: false,
+      });
+      return data.data;
+    } catch (error) {
+      set({ loading: false });
+      throw error;
+    }
   },
 
   submitAnswer: async (questionId, answer) => {
@@ -45,21 +53,31 @@ const useInterviewStore = create((set, get) => ({
 
   getInterview: async (interviewId) => {
     set({ loading: true });
-    const { data } = await api.get(`/interview/${interviewId}`);
-    set({
-      currentInterview: data.data.interview,
-      questions: data.data.questions,
-      responses: data.data.responses,
-      loading: false,
-    });
-    return data.data;
+    try {
+      const { data } = await api.get(`/interview/${interviewId}`);
+      set({
+        currentInterview: data.data.interview,
+        questions: data.data.questions,
+        responses: data.data.responses,
+        loading: false,
+      });
+      return data.data;
+    } catch (error) {
+      set({ loading: false });
+      throw error;
+    }
   },
 
   getUserInterviews: async () => {
     set({ loading: true });
-    const { data } = await api.get('/interview/list');
-    set({ interviews: data.data, loading: false });
-    return data.data;
+    try {
+      const { data } = await api.get('/interview/list');
+      set({ interviews: data.data, loading: false });
+      return data.data;
+    } catch (error) {
+      set({ loading: false });
+      throw error;
+    }
   },
 
   nextQuestion: () => {
