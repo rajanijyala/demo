@@ -1,37 +1,32 @@
-import { createContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useMemo, useState } from 'react';
+
+const STORAGE_KEY = 'app-user';
+
+function loadStoredUser() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  return raw ? JSON.parse(raw) : null;
+}
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(loadStoredUser);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('app-user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+  const saveSession = useCallback((userData, token) => {
+    const nextUser = { ...userData, token };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
+    setUser(nextUser);
   }, []);
 
-  const login = (userData, token) => {
-    const nextUser = { ...userData, token };
-    localStorage.setItem('app-user', JSON.stringify(nextUser));
-    setUser(nextUser);
-  };
-
-  const register = (userData, token) => {
-    const nextUser = { ...userData, token };
-    localStorage.setItem('app-user', JSON.stringify(nextUser));
-    setUser(nextUser);
-  };
-
-  const logout = () => {
-    localStorage.removeItem('app-user');
+  const logout = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
     setUser(null);
-  };
+  }, []);
 
-  const value = useMemo(() => ({ user, loading, login, register, logout, isAuthenticated: Boolean(user) }), [user, loading]);
+  const value = useMemo(
+    () => ({ user, loading: false, login: saveSession, register: saveSession, logout, isAuthenticated: Boolean(user) }),
+    [user, saveSession, logout],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

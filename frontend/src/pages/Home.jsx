@@ -3,12 +3,12 @@ import { ArrowRight, Shield, Sparkles, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { FEATURE_CARDS } from '../constants/app';
 import Button from '../components/ui/Button';
+import { fadeInUp } from '../utils/animations';
 
 const Home = () => (
   <main className="mx-auto flex min-h-[70vh] max-w-7xl flex-col gap-10 px-6 py-12 lg:px-8">
     <motion.section
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
+      {...fadeInUp(18)}
       transition={{ duration: 0.35 }}
       className="grid items-center gap-10 rounded-3xl border border-slate-800 bg-slate-900/70 p-8 shadow-2xl shadow-slate-950/30 lg:grid-cols-[1.1fr_0.9fr] lg:p-12"
     >
@@ -43,8 +43,7 @@ const Home = () => (
       {FEATURE_CARDS.map((card, index) => (
         <motion.article
           key={card.title}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
+          {...fadeInUp(12)}
           transition={{ delay: index * 0.08 }}
           className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 text-left shadow-lg shadow-slate-950/30"
         >
