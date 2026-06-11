@@ -1,10 +1,11 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import useAuthStore from '../stores/authStore';
+import Loader from '../components/ui/Loader';
 
 const ProtectedRoute = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuthStore();
 
-  if (loading) return null;
+  if (loading) return <Loader className="min-h-screen" />;
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
