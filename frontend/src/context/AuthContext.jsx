@@ -1,5 +1,7 @@
 import { createContext, useEffect, useMemo, useState } from 'react';
 
+const STORAGE_KEY = 'app-user';
+
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
@@ -7,27 +9,31 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('app-user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        setUser(JSON.parse(raw));
+      }
+    } catch {
+      sessionStorage.removeItem(STORAGE_KEY);
     }
     setLoading(false);
   }, []);
 
   const login = (userData, token) => {
     const nextUser = { ...userData, token };
-    localStorage.setItem('app-user', JSON.stringify(nextUser));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
     setUser(nextUser);
   };
 
   const register = (userData, token) => {
     const nextUser = { ...userData, token };
-    localStorage.setItem('app-user', JSON.stringify(nextUser));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
     setUser(nextUser);
   };
 
   const logout = () => {
-    localStorage.removeItem('app-user');
+    sessionStorage.removeItem(STORAGE_KEY);
     setUser(null);
   };
 
