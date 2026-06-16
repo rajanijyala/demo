@@ -1,11 +1,17 @@
-import { Link, NavLink } from 'react-router-dom';
-import { ShieldCheck } from 'lucide-react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Bell, ShieldCheck } from 'lucide-react';
 import { APP_NAME, NAV_LINKS } from '../../constants/app';
 import Button from '../ui/Button';
 import { useAuth } from '../../hooks/useAuth';
 
 const Navbar = () => {
   const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+  const visibleLinks = NAV_LINKS.filter((item) => !item.protected || isAuthenticated);
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
@@ -17,8 +23,8 @@ const Navbar = () => {
           <span className="text-lg font-semibold tracking-wide">{APP_NAME}</span>
         </Link>
 
-        <div className="hidden items-center gap-6 md:flex">
-          {NAV_LINKS.map((item) => (
+        <div className="hidden items-center gap-4 md:flex">
+          {visibleLinks.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -37,7 +43,10 @@ const Navbar = () => {
               <Link to="/dashboard">
                 <Button variant="secondary">Dashboard</Button>
               </Link>
-              <Button variant="ghost" onClick={logout}>Logout</Button>
+              <Link to="/notifications" aria-label="Notifications">
+                <Button variant="ghost"><Bell className="h-4 w-4" /></Button>
+              </Link>
+              <Button variant="ghost" onClick={handleLogout}>Logout</Button>
             </>
           ) : (
             <>

@@ -1,19 +1,26 @@
 import api from './api';
-import { delay } from '../utils/helpers';
-
-export const loginUser = async (credentials) => {
-  await delay(500);
-  const { data } = await api.get('/users');
-  const user = data.find((item) => item.email === credentials.email);
-
-  if (!user) {
-    throw new Error('No user found for that email.');
-  }
-
-  return { user: { id: user.id, name: user.name, email: user.email }, token: 'demo-token' };
-};
 
 export const registerUser = async (payload) => {
-  await delay(600);
-  return { user: { id: Date.now(), name: payload.name, email: payload.email }, token: 'demo-token' };
+  const { data } = await api.post('/auth/register', payload);
+  return data;
+};
+
+export const verifyRegisterOtp = async (payload) => {
+  const { data } = await api.post('/auth/verify-register-otp', payload);
+  return data;
+};
+
+export const loginUser = async (credentials) => {
+  const { data } = await api.post('/auth/login', credentials);
+  return data;
+};
+
+export const verifyLoginOtp = async (payload) => {
+  const { data } = await api.post('/auth/verify-login-otp', payload);
+  return data;
+};
+
+export const getProfile = async () => {
+  const { data } = await api.get('/auth/profile');
+  return data;
 };

@@ -1,21 +1,25 @@
-export const APP_NAME = import.meta.env.VITE_APP_NAME || 'Modern Frontend Starter';
+export const APP_NAME = import.meta.env.VITE_APP_NAME || 'AMIE';
 
 export const NAV_LINKS = [
-  { label: 'Home', to: '/' },
-  { label: 'Dashboard', to: '/dashboard' },
+  { label: 'Home', to: '/', protected: false },
+  { label: 'Dashboard', to: '/dashboard', protected: true },
+  { label: 'Interview', to: '/interview/configure', protected: true },
+  { label: 'Resume', to: '/interview/resume', protected: true },
+  { label: 'Questions', to: '/questions', protected: true },
+  { label: 'Analytics', to: '/analytics', protected: true },
 ];
 
 export const FEATURE_CARDS = [
   {
-    title: 'Fast setup',
-    description: 'Vite + React 19 gives you a quick, reliable development loop.',
+    title: 'Real interview sessions',
+    description: 'Configure, start, resume, submit, and review interviews through live APIs.',
   },
   {
-    title: 'Scalable app structure',
-    description: 'Routes, services, hooks, and UI components are organized for growth.',
+    title: 'Deterministic scoring',
+    description: 'Technical accuracy, communication, problem solving, confidence, and completeness are scored consistently.',
   },
   {
-    title: 'Production-ready polish',
-    description: 'Animations, forms, toasts, and layouts are built into every page.',
+    title: 'Practice plan',
+    description: 'Every completed interview creates feedback and a seven-day improvement plan.',
   },
 ];

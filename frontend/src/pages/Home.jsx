@@ -1,10 +1,16 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, Shield, Sparkles, Zap } from 'lucide-react';
+import { ArrowRight, BarChart3, Brain, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { FEATURE_CARDS } from '../constants/app';
 import Button from '../components/ui/Button';
+import { useAuth } from '../hooks/useAuth';
 
-const Home = () => (
+const Home = () => {
+  const { isAuthenticated } = useAuth();
+  const primaryTarget = isAuthenticated ? '/interview/configure' : '/login';
+  const secondaryTarget = isAuthenticated ? '/dashboard' : '/register';
+
+  return (
   <main className="mx-auto flex min-h-[70vh] max-w-7xl flex-col gap-10 px-6 py-12 lg:px-8">
     <motion.section
       initial={{ opacity: 0, y: 18 }}
@@ -15,20 +21,20 @@ const Home = () => (
       <div className="space-y-6 text-left">
         <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 text-sm text-sky-100">
           <Sparkles className="h-4 w-4" />
-          Production-ready React frontend
+          AI Mock Interview Ecosystem
         </div>
-        <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-white md:text-5xl">Launch faster with a solid, modular UI foundation.</h1>
-        <p className="max-w-2xl text-lg text-slate-300">This starter includes routing, API handling, secure route guards, reusable UI components, animations, and a polished layout designed for real products.</p>
+        <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-white md:text-5xl">AMIE</h1>
+        <p className="max-w-2xl text-lg text-slate-300">A complete mock interview workflow with real sessions, saved responses, deterministic feedback, practice planning, and analytics.</p>
         <div className="flex flex-wrap gap-3">
-          <Link to="/register"><Button>Start free</Button></Link>
-          <Link to="/dashboard"><Button variant="secondary">View dashboard</Button></Link>
+          <Link to={primaryTarget}><Button>Start Interview</Button></Link>
+          <Link to={secondaryTarget}><Button variant="secondary">{isAuthenticated ? 'View dashboard' : 'Create account'}</Button></Link>
         </div>
       </div>
 
       <div className="grid gap-4 rounded-3xl border border-slate-800 bg-slate-950/80 p-6 text-left">
         {[
-          { icon: Shield, title: 'Protected routes', text: 'Authentication flow is ready to extend.' },
-          { icon: Zap, title: 'Fast integrations', text: 'Axios and service layers are already wired up.' },
+          { icon: Brain, title: 'Question generation', text: 'OpenAI when configured, intelligent fallback when it is not.' },
+          { icon: BarChart3, title: 'Analytics', text: 'Scores, trends, completion rate, and practice consistency.' },
         ].map((item) => (
           <article key={item.title} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
             <item.icon className="mb-2 h-5 w-5 text-sky-300" />
@@ -55,6 +61,7 @@ const Home = () => (
       ))}
     </section>
   </main>
-);
+  );
+};
 
 export default Home;
