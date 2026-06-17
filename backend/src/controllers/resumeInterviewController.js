@@ -48,7 +48,28 @@ const startResumeInterview = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Resume file is required" });
     }
 
-    const text = await extractTextFromFile(req.file);
+    console.log(
+      "[resumeInterview] Processing upload: %s (%s, %d bytes)",
+      req.file.originalname,
+      req.file.mimetype,
+      req.file.size
+    );
+
+    let text;
+    try {
+      text = await extractTextFromFile(req.file);
+    } catch (extractionError) {
+      console.error(
+        "[resumeInterview] Text extraction failed for %s: %s",
+        req.file.originalname,
+        extractionError.message
+      );
+      return res.status(422).json({
+        success: false,
+        message: `Failed to extract text from resume: ${extractionError.message}`
+      });
+    }
+
     const parsed = parseResumeText(text);
     const matchAnalysis = buildResumeMatchAnalysis({ parsed });
 

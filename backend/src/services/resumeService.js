@@ -3,6 +3,31 @@ const path = require("path");
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_MIME_TYPES = new Set([
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+]);
+const PDF_HEADER = Buffer.from("%PDF");
+
+const validateFile = (file) => {
+  if (!file || !file.path) {
+    throw new Error("Resume file is missing or invalid.");
+  }
+
+  if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
+    throw new Error(
+      `Unsupported file type "${file.mimetype}". Only PDF and DOCX resume files are supported.`
+    );
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(
+      `File size ${(file.size / 1024 / 1024).toFixed(1)} MB exceeds the 5 MB limit.`
+    );
+  }
+};
+
 const knownSkills = [
   "React", "Redux", "JavaScript", "TypeScript", "Node.js", "Express", "MongoDB",
   "Mongoose", "SQL", "MySQL", "PostgreSQL", "HTML", "CSS", "Tailwind", "REST",
@@ -29,15 +54,57 @@ const sectionLines = (lines, labels) => {
 };
 
 const extractTextFromFile = async (file) => {
+  validateFile(file);
+
+  const buffer = await fs.readFile(file.path);
+
   if (file.mimetype === "application/pdf") {
-    const buffer = await fs.readFile(file.path);
+    if (buffer.length < 4 || buffer.subarray(0, 4).compare(PDF_HEADER) !== 0) {
+      throw new Error("File does not appear to be a valid PDF (missing %PDF header).");
+    }
+
+    console.log(
+      "[resumeService] Extracting text from PDF: %s (%s bytes)",
+      file.originalname,
+      buffer.length
+    );
+
     const parsed = await pdfParse(buffer);
-    return parsed.text || "";
+    const text = (parsed.text || "").trim();
+
+    if (!text) {
+      console.warn(
+        "[resumeService] PDF parsed successfully but contained no extractable text: %s",
+        file.originalname
+      );
+    }
+
+    console.log(
+      "[resumeService] PDF extraction complete: %d chars, %d pages",
+      text.length,
+      parsed.numpages
+    );
+    return text;
   }
 
   if (file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+    console.log(
+      "[resumeService] Extracting text from DOCX: %s (%s bytes)",
+      file.originalname,
+      buffer.length
+    );
+
     const parsed = await mammoth.extractRawText({ path: file.path });
-    return parsed.value || "";
+    const text = (parsed.value || "").trim();
+
+    if (!text) {
+      console.warn(
+        "[resumeService] DOCX parsed successfully but contained no extractable text: %s",
+        file.originalname
+      );
+    }
+
+    return text;
   }
 
   throw new Error("Only PDF and DOCX resume files are supported.");
@@ -127,6 +194,7 @@ const buildResumeMatchAnalysis = (resume) => {
 };
 
 module.exports = {
+  validateFile,
   extractTextFromFile,
   parseResumeText,
   buildResumeQuestions,
